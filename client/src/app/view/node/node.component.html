@@ -1,0 +1,14 @@
+<div class="node-container" cdkDragBoundary=".canvas" cdkDrag cdkDropList
+  (cdkDropListDropped)="onDropListDropped($event)"
+  (cdkDragMoved)="onMove()"
+>
+  <div #nodeContent class="node-content" cdkDragHandle>
+    <p>Node</p>
+    <p>{{ id }}</p>
+  </div>
+
+  <app-wiring-anchor class="anchor right"
+    [node]="nodeContent"
+    [nodeId]="id"
+  ></app-wiring-anchor>
+</div>

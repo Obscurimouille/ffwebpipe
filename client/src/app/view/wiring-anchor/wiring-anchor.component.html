@@ -1,0 +1,12 @@
+<div #anchor class="anchor" cdkDrag [id]="nodeId"
+  (cdkDragStarted)="onDragStarted($event)"
+  (cdkDragMoved)="onDragMoved($event)"
+  (cdkDragEnded)="onDragEnded($event)"
+>
+  <div *cdkDragPreview>
+    <div class="anchor preview">
+    </div>
+  </div>
+
+  <div *cdkDragPlaceholder></div>
+</div>

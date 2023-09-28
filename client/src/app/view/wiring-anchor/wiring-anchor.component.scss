@@ -1,0 +1,22 @@
+$node-border-width: 4px;
+
+.anchor {
+  width: 16px;
+  height: 16px;
+  border: 3px solid #f1f1f1;
+  box-sizing: border-box;
+  border-radius: 50%;
+  background-color: #2c2c2c;
+  cursor: pointer;
+
+  &.preview {
+    position: absolute;
+    top: 0;
+    left: 0;
+    transform: translate(-50%, -50%);
+  }
+}
+
+.cdk-drag-preview {
+  position: relative;
+}
