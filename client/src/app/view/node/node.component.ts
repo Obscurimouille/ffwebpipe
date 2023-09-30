@@ -1,4 +1,4 @@
-import { CdkDragDrop, CdkDragExit } from '@angular/cdk/drag-drop';
+import { CdkDragDrop, CdkDragEnter, CdkDragExit } from '@angular/cdk/drag-drop';
 import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, OnInit, QueryList, ViewChild, ViewChildren } from '@angular/core';
 import { NodeService } from 'src/app/services/node/node.service';
 import { WiringService } from 'src/app/services/wiring/wiring.service';
@@ -26,7 +26,7 @@ export class NodeComponent implements OnInit, AfterViewInit {
     private wiringService: WiringService,
     private nodeService: NodeService,
     private ref: ChangeDetectorRef
-    ) {}
+  ) {}
 
   ngOnInit(): void {}
 
@@ -34,8 +34,22 @@ export class NodeComponent implements OnInit, AfterViewInit {
 
   onMove() {
     this.getAssociatedWires().forEach(wire => {
-        wire.lineObject.position();
+      wire.lineObject.position();
     });
+  }
+
+  private addInput(sourceNodeId: number): void {
+    this.inputNodeIds.push(sourceNodeId);
+    this.ref.detectChanges();
+    this.refreshWires();
+  }
+
+  private removeInput(sourceNodeId: number): void {
+    const index = this.inputNodeIds.indexOf(sourceNodeId);
+    if (index == -1) return;
+    this.inputNodeIds.splice(index, 1);
+    this.ref.detectChanges();
+    this.refreshWires();
   }
 
   getAssociatedWires() {
@@ -44,10 +58,7 @@ export class NodeComponent implements OnInit, AfterViewInit {
   }
 
   onDropListDropped(event: CdkDragDrop<any>) {
-    console.log('onDropListDropped')
-    console.log(event)
     const sourceNodeId = Number(event.item.element.nativeElement.id);
-    console.log(sourceNodeId)
     if (sourceNodeId === this.id) return;
 
     const sourceNode = this.nodeService.getNode(sourceNodeId);
@@ -58,24 +69,16 @@ export class NodeComponent implements OnInit, AfterViewInit {
       return;
     }
 
-    this.inputNodeIds.push(sourceNodeId);
-    this.ref.detectChanges();
-    this.refreshWires();
+    this.addInput(sourceNodeId);
 
     const anchors = this.inputAnchorsList.toArray();
-
-    console.log(anchors);
     const anchor = anchors.find(anchor => {
-      console.log('for anchor')
-      console.log(anchor)
       return anchor.sourceNodeId == sourceNodeId;
     });
     if (!anchor) {
       console.error("Cannot find anchor");
       return;
     }
-
-    console.log('selected anchor', anchor)
 
     const line = this.wiringService.create(
       sourceNode.instance.nodeContentRef.nativeElement,
@@ -93,35 +96,29 @@ export class NodeComponent implements OnInit, AfterViewInit {
     return this.wiringService.getWiresForNode(this.id);
   }
 
+  onDropListEntered(event: CdkDragEnter) {
+    console.log('onDropListEntered', this.id, event);
+    this.refreshWires();
+  }
+
   onDropListExited(event: CdkDragExit) {
-    console.log('onDropListExited', event);
+    console.log('onDropListExited', this.id, event);
+    setTimeout(() => this.refreshWires(), 10);
   }
 
   onInputRemoved(sourceNodeId: number) {
     console.log("onInputRemoved on node", this.id, sourceNodeId)
-    const index = this.inputNodeIds.indexOf(sourceNodeId);
-    if (index == -1) return;
-    this.inputNodeIds.splice(index, 1);
-    console.log([...this.getAssociatedWires()])
-    this.ref.detectChanges();
-    console.log([...this.getAssociatedWires()])
-    this.refreshWires();
+    setTimeout(() => this.refreshWires(), 10);
   }
 
-  // TODO: Reassigner les ancres au lines
+  // TODO: Bug multiple ancres fantomes
+
   private refreshWires(): void {
     console.log([...this.getAssociatedWires()])
     this.getAssociatedWires().forEach(wire => {
-      console.log(wire.lineObject.start)
-      console.log(wire.lineObject.end)
       wire.lineObject.position();
     });
-    console.log('done')
     this.ref.detectChanges();
-  }
-
-  public trackInputAnchors(anchor: any, index: number): any {
-    return anchor;
   }
 
 }

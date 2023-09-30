@@ -7,10 +7,11 @@
 
     <!-- -------------------------------- INPUT -------------------------------- -->
     <div class="input-list" cdkDropList
+      (cdkDropListEntered)="onDropListEntered($event)"
       (cdkDropListExited)="onDropListExited($event)"
       (cdkDropListDropped)="onDropListDropped($event)"
     >
-      <app-wiring-anchor #inputAnchors *ngFor="let inputNodeId of inputNodeIds; trackBy: trackInputAnchors" class="anchor"
+      <app-wiring-anchor #inputAnchors *ngFor="let inputNodeId of inputNodeIds" class="anchor"
         [sourceNodeId]="inputNodeId"
         [targetNodeId]="id"
         [attached]="true"
