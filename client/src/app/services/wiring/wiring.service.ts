@@ -15,37 +15,57 @@ export class WiringService {
 
   public wiring = false;
 
+  private defaultLineOptions = {
+    color: 'black',
+    endPlugSize: 1,
+    startPlug: 'square',
+    endPlug: 'hand',
+    startSocket: 'right',
+    endSocket: 'left',
+  };
+
   constructor() { }
 
-  create(startAnchor: HTMLElement, endAnchor: HTMLElement): any {
-    return new LeaderLine(startAnchor, endAnchor, {
-      color: 'black',
-      endPlugSize: 1,
-      startPlug: 'square',
-      endPlug: 'hand'
-    });
+  create(startAnchor: HTMLElement, endAnchor: HTMLElement, options?: any): any {
+    const calculatedOptions = {...this.defaultLineOptions, ...options};
+    return new LeaderLine(startAnchor, endAnchor, calculatedOptions);
   }
 
-  doWireExists(sourceNodeId: number, targetNodeId: number): boolean {
-    const existingWire = this.wireArray.find(
-      w => w.sourceNodeId === sourceNodeId && w.targetNodeId === targetNodeId
-    );
-    return !!existingWire;
-  }
-
-  addWire(wire: WireRef) {
-    const existingWire = this.doWireExists(wire.sourceNodeId, wire.targetNodeId);
+  public addWire(wire: WireRef) {
+    const existingWire = this.getWire({sourceId: wire.sourceNodeId, targetId: wire.targetNodeId});
     if (existingWire) return;
     this.wireArray.push(wire);
+    console.log('wire added', this.wireArray);
   }
 
-  getWires(): WireRef[] {
-    return this.wireArray;
+  public getWire(data: {sourceId?: number, targetId?: number}): WireRef | undefined {
+    const wires = this.getWires(data);
+    if (!wires.length) return undefined;
+    return wires[0];
   }
 
-  @HostListener('document:mouseup', ['$event'])
-  onMouseUp(event: MouseEvent) {
-    // this.done();
+  public getWires(data?: {sourceId?: number, targetId?: number}): WireRef[] {
+    const wires = this.wireArray.filter(w => {
+      if (!!data?.sourceId) {
+        if (w.sourceNodeId !== data.sourceId) return false;
+      }
+      if (!!data?.targetId) {
+        if (w.targetNodeId !== data.targetId) return false;
+      }
+      return true;
+    });
+    return wires;
+  }
+
+  public deleteWire(wireRef: WireRef) {
+    const index = this.wireArray.indexOf(wireRef);
+    if (index == -1) return;
+    this.wireArray[index].lineObject.remove();
+    this.wireArray.splice(index, 1);
+  }
+
+  public getWiresForNode(nodeId: number): WireRef[] {
+    return this.wireArray.filter(w => w.sourceNodeId === nodeId || w.targetNodeId === nodeId);
   }
 
 }

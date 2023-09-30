@@ -1,14 +1,30 @@
-<div class="node-container" cdkDragBoundary=".canvas" cdkDrag cdkDropList
-  (cdkDropListDropped)="onDropListDropped($event)"
+<div class="node-container" cdkDragBoundary=".canvas" cdkDrag
   (cdkDragMoved)="onMove()"
 >
   <div #nodeContent class="node-content" cdkDragHandle>
     <p>Node</p>
     <p>{{ id }}</p>
-  </div>
 
-  <app-wiring-anchor class="anchor right"
-    [node]="nodeContent"
-    [nodeId]="id"
-  ></app-wiring-anchor>
+    <!-- -------------------------------- INPUT -------------------------------- -->
+    <div class="input-list" cdkDropList
+      (cdkDropListExited)="onDropListExited($event)"
+      (cdkDropListDropped)="onDropListDropped($event)"
+    >
+      <app-wiring-anchor #inputAnchors *ngFor="let inputNodeId of inputNodeIds; trackBy: trackInputAnchors" class="anchor"
+        [sourceNodeId]="inputNodeId"
+        [targetNodeId]="id"
+        [attached]="true"
+        (removedEvent)="onInputRemoved(inputNodeId)"
+      ></app-wiring-anchor>
+    </div>
+
+    <!-- ------------------------------- OUTPUT -------------------------------- -->
+    <div class="output-list" cdkDropList
+      (cdkDropListDropped)="onDropListDropped($event)"
+    >
+      <app-wiring-anchor class="anchor right"
+        [sourceNodeId]="id"
+      ></app-wiring-anchor>
+    </div>
+  </div>
 </div>

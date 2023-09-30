@@ -21,6 +21,8 @@ export class AppComponent implements AfterViewInit {
   ngAfterViewInit(): void {
     this.addNode();
     this.addNode();
+    this.addNode();
+    this.addNode();
     this.ref.detectChanges();
   }
 

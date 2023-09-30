@@ -1,5 +1,6 @@
 import { CdkDragEnd, CdkDragMove, CdkDragStart } from '@angular/cdk/drag-drop';
-import { Component, ElementRef, Input, ViewChild } from '@angular/core';
+import { Component, ElementRef, EventEmitter, Input, Output, ViewChild } from '@angular/core';
+import { NodeService } from 'src/app/services/node/node.service';
 import { WiringService } from 'src/app/services/wiring/wiring.service';
 
 @Component({
@@ -13,18 +14,37 @@ export class WiringAnchorComponent {
   public anchorRef!: ElementRef;
 
   @Input()
-  public node!: HTMLElement;
+  public sourceNodeId!: number;
 
   @Input()
-  public nodeId!: number;
+  public sourceElement?: HTMLElement;
+
+  @Input()
+  public targetNodeId?: number;
+
+  @Input()
+  public attached = false;
+
+  @Output()
+  public removedEvent: EventEmitter<void> = new EventEmitter<void>();
 
   private line: any;
 
-  constructor(private wiringService: WiringService) { }
+  constructor(
+    private nodeService: NodeService,
+    private wiringService: WiringService
+  ) { }
 
   onDragStarted(event: CdkDragStart) {
     const preview = document.querySelector('.cdk-drag-preview') as HTMLElement;
-    this.line = this.wiringService.create(this.node, preview);
+    console.log('start drag anchor source:', this.sourceNodeId)
+    if (this.attached) {
+      const existingWire = this.wiringService.getWire({sourceId: this.sourceNodeId, targetId: this.targetNodeId});
+      this.wiringService.deleteWire(existingWire!);
+    }
+    const sourceNode = this.nodeService.getNode(this.sourceNodeId)!;
+    const sourceNodeElement = sourceNode.instance.nodeContentRef.nativeElement;
+    this.line = this.wiringService.create(sourceNodeElement, preview);
   }
 
   onDragMoved(event: CdkDragMove) {
@@ -33,6 +53,9 @@ export class WiringAnchorComponent {
 
   onDragEnded(event: CdkDragEnd) {
     this.line.remove();
+    if (this.attached) {
+      this.removedEvent.emit();
+    }
   }
 
 }
